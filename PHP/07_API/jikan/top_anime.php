@@ -3,61 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estudios</title>
+    <title>Top Anime</title>
     <?php
-        error_reporting( E_ALL );
-        ini_set("display_errors", 1 );
+        error_reporting(E_ALL);
+        ini_set("display_errors", 1);
     ?>
 </head>
 <body>
-<form action="" method="get">
-        <label>ciudad:</label>
-        <input type="text" name="ciudad">
-        <input type="submit" value="Buscar">
+    <!-- 
+        Radiobutton con tres opciones:
+        - Serie
+        - Película
+        - Todos 
 
-    </form>
-    <?php
+        Por defecto salen todos. Si type=(cadena vacia), salen todos
 
+        Hacerlo TODO con método GET
 
-    $apiURL = "https://api.jikan.moe/v4/top/anime";
+        $tipo = $_GET["tipo"];
+        https://api.jikan.moe/v4/top/anime?type=$tipo
 
+        ----------------------------------------------
+
+        - Abajo de la página dos botones o enlaces "Anterior" y "Siguiente".
+
+        - Si se hace con enlaces (a href), añadimos detrás de la URL ?page=$loquesea
+        - Al principio del código preguntamos cuál es la página que nos da la URL, y la añadimos a la URL de la API
+
+        $page = $_GET["page"];
+        https://api.jikan.moe/v4/top/anime=page=$page
+    -->
     
-    $curl = curl_init();
-    curl_setopt($curl, CURLOPT_URL, $apiURL);
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-    $respuesta = curl_exec($curl);
-    curl_close($curl);
+    
+    <?php
+        $apiUrl = "https://api.jikan.moe/v4/top/anime";
+        $page = isset($_GET["page"]) ? $_GET["page"] : 1;
+        $tipo = isset($_GET["type"]) ? $_GET["type"] : "";
+        
+        
+        if (isset($_GET["page"]) && isset($_GET["type"])) { 
+            $apiUrl = "https://api.jikan.moe/v4/top/anime?page=$page&type=$tipo";
+        } else if (isset($_GET["page"])) {
+            $apiUrl = "https://api.jikan.moe/v4/top/anime?page=$page";
+        } else if (isset($_GET["type"])) {
+            $apiUrl = "https://api.jikan.moe/v4/top/anime?type=$tipo";
+        }
 
-    $datos =json_decode($respuesta, true);
-    $animes = $datos["data"];
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $apiUrl);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        $respuesta = curl_exec($curl);
+        curl_close($curl);
 
+        $datos = json_decode($respuesta, true);
+        $animes = $datos["data"];
+        $pagination = $datos["pagination"];
     ?>
+
+    <h2>Filtrar por:</h2>
+    <form action="" method="get">
+        <input type="radio" name="type" id="tv" value="tv">
+        <label for="tv">Serie</label><br>
+        <input type="radio" name="type" id="movie" value="movie">
+        <label for="movie">Película</label><br>
+        <input type="radio" name="type" id="" value="">
+        <label for="all">Todos</label><br><br>
+        <input type="submit" value="Aplicar">
+    </form>
+    <br>
+
     <table>
         <thead>
             <tr>
-                <th>posicion</th>
-                <th>titulo</th>
-                <th>nota</th>
-                <th>imagen</th>
+                <th scope="col">Posición</th>
+                <th scope="col">Título</th>
+                <th scope="col">Nota</th>
+                <th scope="col">Imagen</th>
             </tr>
         </thead>
         <tbody>
-                <?php
-                foreach($animes as $anime){?>
-                <tr>
-                    <td><?php echo $anime["rank"]?></td>
-                    <td>
-                        <a href="anime.php?id=<?php echo $anime["mal_id"]?>">
-                            <?php echo $anime["title"]?></td>
-                        </a>
-                        
-                    <td><?php echo $anime["score"] ?></td>
-                    <td>
-                        <img width="90px" src="<?php echo $anime["images"]["jpg"]["image_url"]?>">
-                    </td>
-                </tr>
-            <?php } ?>
+            <?php
+                foreach($animes as $anime) { ?>
+                    <tr>
+                        <td scope="row"><?php echo $anime["rank"]?></td>
+                        <td>
+                            <a href="anime.php?id=<?php echo $anime["mal_id"]?>">
+                                <?php echo $anime["title"]?>
+                            </a>
+                        </td scope="row">
+                        <td scope="row"><?php echo $anime["score"]?></td>
+                        <td scope="row">
+                            <img width="100px" src="<?php echo $anime["images"]["jpg"]["image_url"]?>">
+                        </td>
+                    </tr>
+                <?php } ?>
         </tbody>
     </table>
+    <?php
+        if ($pagination["current_page"] > 1) { ?>
+            <a href="?page=<?php echo $page-1 ?>&type=<?php echo $tipo ?>">Anterior</a>
+        <?php }
+        if ($pagination["has_next_page"]) { ?>
+            <a href="?page=<?php echo $page+1 ?>&type=<?php echo $tipo ?>">Siguiente</a>
+        <?php } ?>
 </body>
 </html>

@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Información del anime</title>
     <?php
- error_reporting( E_ALL );
- ini_set("display_errors", 1 );
-
+        error_reporting(E_ALL);
+        ini_set("display_errors", 1);
     ?>
 </head>
 <body>
-<?php
+    <?php
         $id = $_GET["id"];
         $apiUrl = "https://api.jikan.moe/v4/anime/$id/full";
 
@@ -23,24 +22,7 @@
 
         $datos = json_decode($respuesta, true);
         $anime = $datos["data"];
-        /* print_r($anime) */
     ?>
-    <!-- 
-    MOSTRAR:
-    - titulo
-    - nota
-    - sinopsis
-    - lista de generos
-    - trailer (embed_id)
-    - lista de animes relacionados
-        + Solo el nombre del anime.
-        + Solo se mostrarán los relacionados que sean de type anime
-    - Añadir a los animes una lista con los productores de la serie.
-      Los productores son las empresas encargadas en producir el anime.
-      Una vez hecha la lista, mostraremos en un archivo productor.php el nombre por
-      defecto del productor, su imagen y la información sobre el 
-      productor que nos provee la api (about)
-    -->
 
     <div>
         <h1><?php echo $anime["title"] ?></h1>
@@ -68,11 +50,10 @@
                     }
                 } ?>
         </ul><br>
-        
         <h2>Productores:</h2>
-        <ul class="list-group">
+        <ul>
             <?php foreach($anime["producers"] as $productor) {  ?>
-                <li class="list-group-item">
+                <li>
                     <a href="productor.php?id=<?php echo $productor["mal_id"]?>">
                         <?php echo $productor["name"]?>
                     </a>
@@ -82,5 +63,6 @@
         <iframe width="500px" height="350px" src="<?php echo $anime["trailer"]["embed_url"]?>"></iframe>
 
     </div>
+    
 </body>
 </html>
